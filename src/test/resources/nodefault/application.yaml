@@ -3,3 +3,8 @@ a:
   b:
     c: nestedvalue
 c: 1
+d:
+  array:
+    - a1
+    - a2
+    - a3
