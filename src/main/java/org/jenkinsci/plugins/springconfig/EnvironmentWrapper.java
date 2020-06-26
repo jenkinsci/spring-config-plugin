@@ -2,67 +2,38 @@ package org.jenkinsci.plugins.springconfig;
 
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.lang.Nullable;
+import org.yaml.snakeyaml.Yaml;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class EnvironmentWrapper {
+public class EnvironmentWrapper implements Serializable {
 
-	private StandardEnvironment environment;
+	private Map<String, Object> properties;
+
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		Yaml yaml = new Yaml();
+		String output = yaml.dump(properties);
+		out.writeUTF(output);
+	}
+
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		String yamlString = in.readUTF();
+		Yaml yaml = new Yaml();
+		properties = yaml.load(yamlString);
+	}
 
 	public EnvironmentWrapper(StandardEnvironment environment) {
-		this.environment = environment;
+		this.properties = toProperties(environment);
 	}
 
 	@Whitelisted
-	public String[] getActiveProfiles() {
-		return environment.getActiveProfiles();
-	}
-
-	@Whitelisted
-	public String[] getDefaultProfiles() {
-		return environment.getDefaultProfiles();
-	}
-
-	@Whitelisted
-	public boolean containsProperty(String key) {
-		return environment.containsProperty(key);
-	}
-
-	@Nullable
-	@Whitelisted
-	public String getProperty(String key) {
-		return environment.getProperty(key);
-	}
-
-	@Whitelisted
-	public String getProperty(String key, String defaultValue) {
-		return environment.getProperty(key, defaultValue);
-	}
-
-	@Nullable
-	@Whitelisted
-	public <T> T getProperty(String key, Class<T> targetType) {
-		return environment.getProperty(key, targetType);
-	}
-
-	@Whitelisted
-	public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-		return environment.getProperty(key, targetType, defaultValue);
-	}
-
-	@Whitelisted
-	public String getRequiredProperty(String key) throws IllegalStateException {
-		return environment.getRequiredProperty(key);
-	}
-
-	@Whitelisted
-	public <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
-		return environment.getRequiredProperty(key, targetType);
+	public Map<String, Object> getProperties() {
+		return properties;
 	}
 
 	@Whitelisted
@@ -79,39 +50,40 @@ public class EnvironmentWrapper {
 		return rootMap;
 	}
 
-	@Whitelisted
-	public Map<String, Object> getProperties() {
+	private Map<String, Object> toProperties(StandardEnvironment environment) {
 		// Map of unique keys containing full map of properties for each unique
 		// key
 		Map<String, Map<String, Object>> map = new LinkedHashMap<>();
 		Map<String, Object> combinedMap = new LinkedHashMap<>();
-		environment.getPropertySources().stream().filter(source -> source instanceof OriginTrackedMapPropertySource)
-				.forEach(source -> {
-					@SuppressWarnings("unchecked")
-					Map<String, Object> value = (Map<String, Object>) source.getSource();
-					for (String key : value.keySet()) {
-						if (!key.contains("[")) {
-							// Not an array, add unique key to the map
-							combinedMap.put(key, value.get(key));
+		List<PropertySource<?>> sources = new ArrayList(
+				environment.getPropertySources().stream().collect(Collectors.toList()));
+		Collections.reverse(sources);
+		sources.stream().filter(source -> source instanceof OriginTrackedMapPropertySource).forEach(source -> {
+			@SuppressWarnings("unchecked")
+			Map<String, Object> value = (Map<String, Object>) source.getSource();
+			for (String key : value.keySet()) {
+				if (!key.contains("[")) {
+					// Not an array, add unique key to the map
+					combinedMap.put(key, String.valueOf(value.get(key)));
 
-						}
-						else {
-							// An existing array might have already been added to the
-							// property map
-							// of an unequal size to the current array. Replace the array
-							// key in
-							// the current map.
-							key = key.substring(0, key.indexOf("["));
-							Map<String, Object> filtered = new LinkedHashMap<>();
-							for (String index : value.keySet()) {
-								if (index.startsWith(key + "[")) {
-									filtered.put(index, value.get(index));
-								}
-							}
-							map.put(key, filtered);
+				}
+				else {
+					// An existing array might have already been added to the
+					// property map
+					// of an unequal size to the current array. Replace the array
+					// key in
+					// the current map.
+					key = key.substring(0, key.indexOf("["));
+					Map<String, Object> filtered = new LinkedHashMap<>();
+					for (String index : value.keySet()) {
+						if (index.startsWith(key + "[")) {
+							filtered.put(index, String.valueOf(value.get(index)));
 						}
 					}
-				});
+					map.put(key, filtered);
+				}
+			}
+		});
 		// Combine all unique keys for array values into the combined map
 		for (Map.Entry<String, Map<String, Object>> entry : map.entrySet()) {
 			combinedMap.putAll(entry.getValue());
