@@ -5,6 +5,7 @@ import hudson.CloseProofOutputStream;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
 import jenkins.security.MasterToSlaveCallable;
@@ -34,6 +35,8 @@ import static org.springframework.boot.context.config.ConfigFileApplicationListe
 @Setter
 @Getter
 public class SpringConfigStep extends Step implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private String[] profiles;
 
@@ -91,14 +94,24 @@ public class SpringConfigStep extends Step implements Serializable {
 		@SneakyThrows
 		protected EnvironmentWrapper run() {
 			FilePath ws = getContext().get(FilePath.class);
-			TaskListener listener = getContext().get(TaskListener.class);
 			assert ws != null;
+
+			TaskListener listener = getContext().get(TaskListener.class);
+			Run run = getContext().get(Run.class);
 
 			Launcher launcher = getContext().get(Launcher.class);
 			if (launcher != null) {
 				String[] profilesArray = step.getProfiles() != null ? step.getProfiles() : new String[0];
-				return launcher.getChannel()
+				EnvironmentWrapper environmentWrapper = launcher.getChannel()
 						.call(new Execution(profilesArray, step.getLocation(), listener.getLogger(), ws));
+				SpringConfigAction springConfigAction = run.getAction(SpringConfigAction.class);
+				if (springConfigAction == null) {
+					springConfigAction = new SpringConfigAction();
+					run.addAction(springConfigAction);
+				}
+				springConfigAction.addProperties(environmentWrapper.asProperties());
+				run.save();
+				return environmentWrapper;
 			}
 			else {
 				return null;
@@ -107,6 +120,8 @@ public class SpringConfigStep extends Step implements Serializable {
 		}
 
 		public static class Execution extends MasterToSlaveCallable<EnvironmentWrapper, RuntimeException> {
+
+			private static final long serialVersionUID = 1L;
 
 			private final String[] profilesArray;
 
