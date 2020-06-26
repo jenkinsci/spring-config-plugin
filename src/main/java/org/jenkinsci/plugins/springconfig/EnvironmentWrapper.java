@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.springconfig;
 
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
+import org.springframework.boot.origin.OriginTrackedValue;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.yaml.snakeyaml.Yaml;
@@ -11,7 +12,9 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class EnvironmentWrapper implements Serializable {
+public class EnvironmentWrapper extends AbstractMap<String, Object> implements Serializable {
+
+	private Map<String, Object> rootMap;
 
 	private Map<String, Object> properties;
 
@@ -28,26 +31,13 @@ public class EnvironmentWrapper implements Serializable {
 	}
 
 	public EnvironmentWrapper(StandardEnvironment environment) {
-		this.properties = toProperties(environment);
+		properties = toProperties(environment);
+
 	}
 
 	@Whitelisted
-	public Map<String, Object> getProperties() {
+	public Map<String, Object> asProperties() {
 		return properties;
-	}
-
-	@Whitelisted
-	public Map<String, Object> getNestedMap() {
-		Map<String, Object> properties = getProperties();
-		// The root map which holds all the first level properties
-		Map<String, Object> rootMap = new LinkedHashMap<>();
-		for (Map.Entry<String, Object> entry : properties.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			PropertyNavigator nav = new PropertyNavigator(key);
-			nav.setMapValue(rootMap, value);
-		}
-		return rootMap;
 	}
 
 	private Map<String, Object> toProperties(StandardEnvironment environment) {
@@ -64,7 +54,12 @@ public class EnvironmentWrapper implements Serializable {
 			for (String key : value.keySet()) {
 				if (!key.contains("[")) {
 					// Not an array, add unique key to the map
-					combinedMap.put(key, String.valueOf(value.get(key)));
+
+					Object val = value.get(key);
+					if (val instanceof OriginTrackedValue) {
+						val = ((OriginTrackedValue) val).getValue();
+					}
+					combinedMap.put(key, val);
 
 				}
 				else {
@@ -77,7 +72,11 @@ public class EnvironmentWrapper implements Serializable {
 					Map<String, Object> filtered = new LinkedHashMap<>();
 					for (String index : value.keySet()) {
 						if (index.startsWith(key + "[")) {
-							filtered.put(index, String.valueOf(value.get(index)));
+							Object val = value.get(index);
+							if (val instanceof OriginTrackedValue) {
+								val = ((OriginTrackedValue) val).getValue();
+							}
+							filtered.put(index, val);
 						}
 					}
 					map.put(key, filtered);
@@ -94,6 +93,20 @@ public class EnvironmentWrapper implements Serializable {
 
 	private void postProcessProperties(Map<String, Object> propertiesMap) {
 		propertiesMap.keySet().removeIf(key -> key.equals("spring.profiles"));
+	}
+
+	@Override
+	public Set<Entry<String, Object>> entrySet() {
+		if (rootMap == null) {
+			rootMap = new LinkedHashMap<>();
+			for (Map.Entry<String, Object> entry : properties.entrySet()) {
+				String key = entry.getKey();
+				Object value = entry.getValue();
+				PropertyNavigator nav = new PropertyNavigator(key);
+				nav.setMapValue(rootMap, value);
+			}
+		}
+		return rootMap.entrySet();
 	}
 
 	/**
