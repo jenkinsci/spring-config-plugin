@@ -1,27 +1,31 @@
 package org.jenkinsci.plugins.springconfig;
 
 import hudson.PluginWrapper;
+import hudson.model.Api;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.annotation.CheckForNull;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@ExportedBean
 public class SpringConfigAction implements RunAction2 {
 
-	Run run;
+	private Run run;
 
-	private List<Map<String, Object>> propertiesList = new ArrayList();
+	private Map<String, Map<String, Object>> propertiesList = new HashMap();
 
-	public void addProperties(Map<String, Object> properties) {
-		propertiesList.add(properties);
+	public void addProperties(String profiles, Map<String, Object> properties) {
+		propertiesList.put(profiles, properties);
 	}
 
 	@Override
@@ -53,12 +57,35 @@ public class SpringConfigAction implements RunAction2 {
 		return "springconfig";
 	}
 
-	public List<List<KeyValue>> getAllProperties() {
-		return propertiesList.stream()
-				.map(properties -> properties.entrySet().stream()
-						.map(property -> KeyValue.builder().key(property.getKey()).value(property.getValue()).build())
-						.collect(Collectors.toList()))
-				.collect(Collectors.toList());
+	public Api getApi() {
+		return new Api(this);
+	}
+
+	@Exported(visibility = 2)
+	public Map<String, Map<String, Object>> getPropertiesList() {
+		return propertiesList;
+	}
+
+	public List<ProfileConfig> getAllProperties() {
+		return propertiesList.entrySet().stream().map(profileProperties -> {
+			Map<String, Object> properties = profileProperties.getValue();
+			List<KeyValue> propertiesAsList = properties.entrySet().stream()
+					.map(property -> KeyValue.builder().key(property.getKey()).value(property.getValue()).build())
+					.collect(Collectors.toList());
+			String profiles = profileProperties.getKey();
+			return ProfileConfig.builder().profiles(profiles).properties(propertiesAsList).build();
+		}).collect(Collectors.toList());
+	}
+
+	@Setter
+	@Getter
+	@Builder
+	public static class ProfileConfig {
+
+		private String profiles;
+
+		private List<KeyValue> properties;
+
 	}
 
 	@Setter

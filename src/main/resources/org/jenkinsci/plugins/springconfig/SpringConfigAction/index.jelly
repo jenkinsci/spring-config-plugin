@@ -34,7 +34,9 @@
         <st:include page="sidepanel.jelly" it="${build}"/>
         <l:main-panel>
             <h3>Spring Config (Build ${build.displayName})</h3>
-            <j:forEach items="${it.allProperties}" var="properties">
+            <j:forEach items="${it.allProperties}" var="profileProperties">
+                <h3>Profiles ${profileProperties.profiles}</h3>
+                <j:set var="properties" value="${profileProperties.properties}"/>
                 <table  class="sortable pane bigtable" style="width:unset">
                     <tr>
                         <th>key</th>
