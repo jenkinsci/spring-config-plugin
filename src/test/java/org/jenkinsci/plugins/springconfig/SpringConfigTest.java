@@ -16,6 +16,28 @@ public class SpringConfigTest {
 	public JenkinsRule r = new JenkinsRule();
 
 	@Test
+	public void testReadSpringConfig() throws Exception {
+		Jenkins jenkins = r.jenkins;
+		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
+		FilePath applicationYaml = jenkins.getWorkspaceFor(p).child("application.yaml");
+		applicationYaml.copyFrom(this.getClass().getClassLoader().getResourceAsStream("nodefault/application.yaml"));
+		p.setDefinition(new CpsFlowDefinition("node {print springConfig().a.b.c}", true));
+		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+		r.assertLogContains("nestedvalue", b);
+	}
+
+	@Test
+	public void testReadSpringConfigArrayValue() throws Exception {
+		Jenkins jenkins = r.jenkins;
+		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
+		FilePath applicationYaml = jenkins.getWorkspaceFor(p).child("application.yaml");
+		applicationYaml.copyFrom(this.getClass().getClassLoader().getResourceAsStream("nodefault/application.yaml"));
+		p.setDefinition(new CpsFlowDefinition("node {print springConfig().d.array[0]}", true));
+		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+		r.assertLogContains("a1", b);
+	}
+
+	@Test
 	public void testReadSpringConfigWithProfile() throws Exception {
 		Jenkins jenkins = r.jenkins;
 		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
@@ -42,17 +64,6 @@ public class SpringConfigTest {
 				"node{print springConfig(profiles: ['goo'], location : 'custom-config/').foo}", true));
 		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
 		r.assertLogContains("gooporfile", b);
-	}
-
-	@Test
-	public void testReadSpringConfig() throws Exception {
-		Jenkins jenkins = r.jenkins;
-		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
-		FilePath applicationYaml = jenkins.getWorkspaceFor(p).child("application.yaml");
-		applicationYaml.copyFrom(this.getClass().getClassLoader().getResourceAsStream("nodefault/application.yaml"));
-		p.setDefinition(new CpsFlowDefinition("node {print springConfig().a.b.c}", true));
-		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
-		r.assertLogContains("nestedvalue", b);
 	}
 
 	@Test

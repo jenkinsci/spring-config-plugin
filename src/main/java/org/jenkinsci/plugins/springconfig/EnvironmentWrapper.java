@@ -32,7 +32,7 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 
 	public EnvironmentWrapper(StandardEnvironment environment) {
 		properties = toProperties(environment);
-
+		rootMap = createNestedMap(properties);
 	}
 
 	@Whitelisted
@@ -98,15 +98,20 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 	@Override
 	public Set<Entry<String, Object>> entrySet() {
 		if (rootMap == null) {
-			rootMap = new LinkedHashMap<>();
-			for (Map.Entry<String, Object> entry : properties.entrySet()) {
-				String key = entry.getKey();
-				Object value = entry.getValue();
-				PropertyNavigator nav = new PropertyNavigator(key);
-				nav.setMapValue(rootMap, value);
-			}
+			rootMap = createNestedMap(properties);
 		}
 		return rootMap.entrySet();
+	}
+
+	private Map<String, Object> createNestedMap(Map<String, Object> properties) {
+		Map<String, Object> rootMap = new LinkedHashMap<>();
+		for (Entry<String, Object> entry : properties.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			PropertyNavigator nav = new PropertyNavigator(key);
+			nav.setMapValue(rootMap, value);
+		}
+		return rootMap;
 	}
 
 	/**
