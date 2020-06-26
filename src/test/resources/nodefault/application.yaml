@@ -2,3 +2,4 @@ foo: bar
 a:
   b:
     c: nestedvalue
+c: 1
