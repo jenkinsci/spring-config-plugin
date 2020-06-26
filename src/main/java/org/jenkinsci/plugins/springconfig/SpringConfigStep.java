@@ -116,7 +116,8 @@ public class SpringConfigStep extends Step implements Serializable {
 						springConfigAction = new SpringConfigAction();
 						run.addAction(springConfigAction);
 					}
-					springConfigAction.addProperties(environmentWrapper.asProperties());
+					springConfigAction.addProperties(environmentWrapper.getProfilesAsString(),
+							environmentWrapper.asProperties());
 					run.save();
 				}
 				return environmentWrapper;

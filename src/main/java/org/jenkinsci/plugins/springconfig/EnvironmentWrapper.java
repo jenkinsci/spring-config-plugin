@@ -20,10 +20,13 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 
 	private Map<String, Object> properties;
 
+	private String[] profiles;
+
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
 		Yaml yaml = new Yaml();
 		String output = yaml.dump(properties);
 		out.writeUTF(output);
+		out.writeObject(profiles);
 	}
 
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -31,11 +34,21 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 		Yaml yaml = new Yaml();
 		properties = yaml.load(yamlString);
 		rootMap = createNestedMap(properties);
+		profiles = (String[]) in.readObject();
 	}
 
 	public EnvironmentWrapper(StandardEnvironment environment) {
 		properties = toProperties(environment);
 		rootMap = createNestedMap(properties);
+		profiles = environment.getActiveProfiles();
+	}
+
+	public String[] getProfiles() {
+		return profiles;
+	}
+
+	public String getProfilesAsString() {
+		return String.join(",", profiles);
 	}
 
 	@Whitelisted
