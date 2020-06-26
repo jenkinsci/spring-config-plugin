@@ -237,7 +237,7 @@
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
                 <configuration>
-                    <minimumJavaVersion>1.8</minimumJavaVersion>
+                    <minimumJavaVersion>${java.level}</minimumJavaVersion>
                     <pluginFirstClassLoader>true</pluginFirstClassLoader>
                 </configuration>
 

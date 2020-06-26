@@ -28,6 +28,7 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 		String yamlString = in.readUTF();
 		Yaml yaml = new Yaml();
 		properties = yaml.load(yamlString);
+		rootMap = createNestedMap(properties);
 	}
 
 	public EnvironmentWrapper(StandardEnvironment environment) {
@@ -38,6 +39,11 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 	@Whitelisted
 	public Map<String, Object> asProperties() {
 		return properties;
+	}
+
+	@Override
+	public Set<Entry<String, Object>> entrySet() {
+		return rootMap.entrySet();
 	}
 
 	private Map<String, Object> toProperties(StandardEnvironment environment) {
@@ -93,14 +99,6 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 
 	private void postProcessProperties(Map<String, Object> propertiesMap) {
 		propertiesMap.keySet().removeIf(key -> key.equals("spring.profiles"));
-	}
-
-	@Override
-	public Set<Entry<String, Object>> entrySet() {
-		if (rootMap == null) {
-			rootMap = createNestedMap(properties);
-		}
-		return rootMap.entrySet();
 	}
 
 	private Map<String, Object> createNestedMap(Map<String, Object> properties) {
