@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 public class EnvironmentWrapper extends AbstractMap<String, Object> implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	private Map<String, Object> rootMap;
 
 	private Map<String, Object> properties;
