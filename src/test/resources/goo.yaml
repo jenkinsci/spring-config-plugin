@@ -1,0 +1,2 @@
+#not start with application so won't loaded by spring automatically
+foo: gooporfile
