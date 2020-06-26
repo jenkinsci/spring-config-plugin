@@ -42,6 +42,8 @@ public class SpringConfigStep extends Step implements Serializable {
 
 	private String location;
 
+	private boolean hideInBuildPage = false;
+
 	@DataBoundSetter
 	public void setProfiles(String[] profiles) {
 		this.profiles = profiles;
@@ -50,6 +52,11 @@ public class SpringConfigStep extends Step implements Serializable {
 	@DataBoundSetter
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	@DataBoundSetter
+	public void setHideInBuildPage(boolean hideInBuildPage) {
+		this.hideInBuildPage = hideInBuildPage;
 	}
 
 	@DataBoundConstructor
@@ -95,22 +102,23 @@ public class SpringConfigStep extends Step implements Serializable {
 		protected EnvironmentWrapper run() {
 			FilePath ws = getContext().get(FilePath.class);
 			assert ws != null;
-
 			TaskListener listener = getContext().get(TaskListener.class);
 			Run run = getContext().get(Run.class);
-
 			Launcher launcher = getContext().get(Launcher.class);
+
 			if (launcher != null) {
 				String[] profilesArray = step.getProfiles() != null ? step.getProfiles() : new String[0];
 				EnvironmentWrapper environmentWrapper = launcher.getChannel()
 						.call(new Execution(profilesArray, step.getLocation(), listener.getLogger(), ws));
-				SpringConfigAction springConfigAction = run.getAction(SpringConfigAction.class);
-				if (springConfigAction == null) {
-					springConfigAction = new SpringConfigAction();
-					run.addAction(springConfigAction);
+				if (!step.isHideInBuildPage()) {
+					SpringConfigAction springConfigAction = run.getAction(SpringConfigAction.class);
+					if (springConfigAction == null) {
+						springConfigAction = new SpringConfigAction();
+						run.addAction(springConfigAction);
+					}
+					springConfigAction.addProperties(environmentWrapper.asProperties());
+					run.save();
 				}
-				springConfigAction.addProperties(environmentWrapper.asProperties());
-				run.save();
 				return environmentWrapper;
 			}
 			else {
