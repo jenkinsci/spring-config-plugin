@@ -27,6 +27,19 @@ public class SpringConfigTest {
 	}
 
 	@Test
+	public void testReadSpringConfigInDir() throws Exception {
+		Jenkins jenkins = r.jenkins;
+		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
+		FilePath applicationGooYaml = jenkins.getWorkspaceFor(p).child("custom-config").child("application-goo.yaml");
+		applicationGooYaml
+				.copyFrom(this.getClass().getClassLoader().getResourceAsStream("nodefault/application-goo.yaml"));
+		p.setDefinition(
+				new CpsFlowDefinition("node{dir('custom-config'){print springConfig(profiles: ['goo']).foo}}", true));
+		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+		r.assertLogContains("gooporfile", b);
+	}
+
+	@Test
 	public void testReadSpringConfigArrayValue() throws Exception {
 		Jenkins jenkins = r.jenkins;
 		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
