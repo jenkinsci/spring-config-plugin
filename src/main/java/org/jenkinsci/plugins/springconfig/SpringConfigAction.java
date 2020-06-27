@@ -22,10 +22,10 @@ public class SpringConfigAction implements RunAction2 {
 
 	private Run run;
 
-	private Map<String, Map<String, Object>> propertiesList = new HashMap();
+	private Map<String, Map<String, Object>> allProperties = new HashMap();
 
 	public void addProperties(String profiles, Map<String, Object> properties) {
-		propertiesList.put(profiles, properties);
+		allProperties.put(profiles, properties);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class SpringConfigAction implements RunAction2 {
 	@Override
 	public String getIconFileName() {
 		PluginWrapper wrapper = Jenkins.get().getPluginManager().getPlugin(SpringConfigPlugin.class);
-		return "/plugin/" + wrapper.getShortName() + "/images/spring-framework.png";
+		return "/plugin/spring-config/images/spring-framework.png";
 	}
 
 	@CheckForNull
@@ -62,12 +62,12 @@ public class SpringConfigAction implements RunAction2 {
 	}
 
 	@Exported(visibility = 2)
-	public Map<String, Map<String, Object>> getPropertiesList() {
-		return propertiesList;
+	public Map<String, Map<String, Object>> getProperties() {
+		return allProperties;
 	}
 
 	public List<ProfileConfig> getAllProperties() {
-		return propertiesList.entrySet().stream().map(profileProperties -> {
+		return allProperties.entrySet().stream().map(profileProperties -> {
 			Map<String, Object> properties = profileProperties.getValue();
 			List<KeyValue> propertiesAsList = properties.entrySet().stream()
 					.map(property -> KeyValue.builder().key(property.getKey()).value(property.getValue()).build())

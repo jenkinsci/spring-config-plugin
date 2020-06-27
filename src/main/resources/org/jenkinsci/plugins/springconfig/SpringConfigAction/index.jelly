@@ -33,24 +33,26 @@
         <j:set var="build" value="${request.findAncestorObject(buildClass)}"/>
         <st:include page="sidepanel.jelly" it="${build}"/>
         <l:main-panel>
-            <h3>Spring Config (Build ${build.displayName})</h3>
-            <j:forEach items="${it.allProperties}" var="profileProperties">
-                <h3>Profiles ${profileProperties.profiles}</h3>
-                <j:set var="properties" value="${profileProperties.properties}"/>
-                <table  class="sortable pane bigtable" style="width:unset">
-                    <tr>
-                        <th>key</th>
-                        <th>value</th>
-                    </tr>
-                    <j:forEach items="${properties}" var="property">
+            <div id="springconfig-panel">
+                <h3>Spring Config (Build ${build.displayName})</h3>
+                <j:forEach items="${it.allProperties}" var="profileProperties">
+                    <h3>Profiles [${profileProperties.profiles}]</h3>
+                    <j:set var="properties" value="${profileProperties.properties}"/>
+                    <table class="sortable pane bigtable" style="width:unset">
                         <tr>
-                            <td>${property.key}</td>
-                            <td>${property.value}</td>
+                            <th>key</th>
+                            <th>value</th>
                         </tr>
-                    </j:forEach>
-                </table>
-                <br/>
-            </j:forEach>
+                        <j:forEach items="${properties}" var="property">
+                            <tr>
+                                <td>${property.key}</td>
+                                <td>${property.value}</td>
+                            </tr>
+                        </j:forEach>
+                    </table>
+                    <br/>
+                </j:forEach>
+            </div>
         </l:main-panel>
     </l:layout>
 </j:jelly>

@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.springconfig;
 
+import lombok.SneakyThrows;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
 import org.springframework.boot.origin.OriginTrackedValue;
@@ -7,8 +8,10 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,7 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 		profiles = environment.getActiveProfiles();
 	}
 
+	@Whitelisted
 	public String[] getProfiles() {
 		return profiles;
 	}
@@ -54,6 +58,16 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 	@Whitelisted
 	public Map<String, Object> asProperties() {
 		return properties;
+	}
+
+	@Whitelisted
+	@SneakyThrows
+	public String asPropertiesFileContent() {
+		Properties javaProperties = new Properties();
+		properties.forEach((key, value) -> javaProperties.setProperty(key, String.valueOf(value)));
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		javaProperties.store(baos, "With profiles [" + getProfilesAsString() + "]");
+		return new String(baos.toByteArray(), StandardCharsets.UTF_8);
 	}
 
 	@Override

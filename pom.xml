@@ -20,9 +20,9 @@
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.204.6</jenkins.version>
         <java.level>8</java.level>
-        <workflow.version>1.14.2</workflow.version>
         <assertj.version>3.16.1</assertj.version>
         <snakeyaml-api.version>1.26.2</snakeyaml-api.version>
+        <lombok.version>1.18.10</lombok.version>
     </properties>
 
     <name>Spring Config Plugin</name>
@@ -81,16 +81,23 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jenkins-ci.plugins</groupId>
-                <artifactId>credentials</artifactId>
-                <version>2.1.13</version>
+                <groupId>io.jenkins.plugins</groupId>
+                <artifactId>snakeyaml-api</artifactId>
+                <version>${snakeyaml-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.10</version>
+                <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -106,8 +113,6 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -115,46 +120,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-multibranch</artifactId>
-            <version>${workflow.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>snakeyaml-api</artifactId>
-            <version>${snakeyaml-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
-            <exclusions>
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.springframework</groupId>-->
-                <!--                    <artifactId>spring-jcl</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.springframework</groupId>-->
-                <!--                    <artifactId>spring-jdbc</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.springframework</groupId>-->
-                <!--                    <artifactId>spring-tx</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.springframework</groupId>-->
-                <!--                    <artifactId>spring-web</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>org.springframework</groupId>-->
-                <!--                    <artifactId>spring-webmvc</artifactId>-->
-                <!--                </exclusion>-->
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
