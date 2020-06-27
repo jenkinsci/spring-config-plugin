@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.springconfig;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import hudson.CloseProofOutputStream;
 import hudson.Extension;
@@ -23,12 +24,11 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.springframework.boot.context.config.ConfigFileApplicationListener.CONFIG_LOCATION_PROPERTY;
 
@@ -38,15 +38,19 @@ public class SpringConfigStep extends Step implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private String[] profiles;
+	private List<String> profiles = new ArrayList<String>();
 
 	private String location;
 
 	private boolean hideInBuildPage = false;
 
 	@DataBoundSetter
-	public void setProfiles(String[] profiles) {
-		this.profiles = profiles;
+	public void setProfiles(List<String> profiles) {
+		this.profiles = ImmutableList.copyOf(profiles);
+	}
+
+	public List<String> getProfiles() {
+		return ImmutableList.copyOf(profiles);
 	}
 
 	@DataBoundSetter
@@ -106,33 +110,34 @@ public class SpringConfigStep extends Step implements Serializable {
 			Run run = getContext().get(Run.class);
 			Launcher launcher = getContext().get(Launcher.class);
 
-			if (launcher != null) {
-				String[] profilesArray = step.getProfiles() != null ? step.getProfiles() : new String[0];
-				EnvironmentWrapper environmentWrapper = launcher.getChannel()
-						.call(new Execution(profilesArray, step.getLocation(), listener.getLogger(), ws));
-				if (!step.isHideInBuildPage()) {
-					SpringConfigAction springConfigAction = run.getAction(SpringConfigAction.class);
-					if (springConfigAction == null) {
-						springConfigAction = new SpringConfigAction();
-						run.addAction(springConfigAction);
-					}
-					springConfigAction.addProperties(environmentWrapper.getProfilesAsString(),
-							environmentWrapper.asProperties());
-					run.save();
+			EnvironmentWrapper environmentWrapper = Optional.ofNullable(launcher).map(Launcher::getChannel)
+					.map(channel -> {
+						try {
+							return channel.call(
+									new Execution(step.getProfiles(), step.getLocation(), listener.getLogger(), ws));
+						}
+						catch (IOException | RuntimeException | InterruptedException e) {
+							return null;
+						}
+					}).orElse(null);
+			if (!step.isHideInBuildPage() && environmentWrapper != null) {
+				SpringConfigAction springConfigAction = run.getAction(SpringConfigAction.class);
+				if (springConfigAction == null) {
+					springConfigAction = new SpringConfigAction();
+					run.addAction(springConfigAction);
 				}
-				return environmentWrapper;
+				springConfigAction.addProperties(environmentWrapper.getProfilesAsString(),
+						environmentWrapper.asProperties());
+				run.save();
 			}
-			else {
-				return null;
-			}
-
+			return environmentWrapper;
 		}
 
 		public static class Execution extends MasterToSlaveCallable<EnvironmentWrapper, RuntimeException> {
 
 			private static final long serialVersionUID = 1L;
 
-			private final String[] profilesArray;
+			private final List<String> profiles;
 
 			private final String location;
 
@@ -143,8 +148,8 @@ public class SpringConfigStep extends Step implements Serializable {
 			private transient PrintStream localLogger;
 
 			@SneakyThrows
-			public Execution(String[] profilesArray, String location, PrintStream logger, FilePath ws) {
-				this.profilesArray = profilesArray;
+			public Execution(List<String> profiles, String location, PrintStream logger, FilePath ws) {
+				this.profiles = ImmutableList.copyOf(profiles);
 				this.location = location;
 				localLogger = logger;
 				this.remoteLogger = new RemoteOutputStream(new CloseProofOutputStream(logger));
@@ -165,8 +170,8 @@ public class SpringConfigStep extends Step implements Serializable {
 				}
 				MapPropertySource mapPropertySource = new MapPropertySource("configfiles", configFilesMap);
 				environment.getPropertySources().addFirst(mapPropertySource);
-				SpringApplicationBuilder builder = new SpringApplicationBuilder().profiles(profilesArray)
-						.bannerMode(Banner.Mode.OFF).environment(environment)
+				SpringApplicationBuilder builder = new SpringApplicationBuilder()
+						.profiles(profiles.toArray(new String[0])).bannerMode(Banner.Mode.OFF).environment(environment)
 						// Don't use the default properties in this builder
 						.registerShutdownHook(false).logStartupInfo(false).web(WebApplicationType.NONE)
 						.sources(EmtpyConfiguration.class);

@@ -47,8 +47,8 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 	}
 
 	@Whitelisted
-	public String[] getProfiles() {
-		return profiles;
+	public List<String> getProfiles() {
+		return Arrays.asList(profiles);
 	}
 
 	public String getProfilesAsString() {
@@ -86,11 +86,12 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 		sources.stream().filter(source -> source instanceof OriginTrackedMapPropertySource).forEach(source -> {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> value = (Map<String, Object>) source.getSource();
-			for (String key : value.keySet()) {
+			for (Map.Entry<String, Object> entry : value.entrySet()) {
+				String key = entry.getKey();
 				if (!key.contains("[")) {
 					// Not an array, add unique key to the map
 
-					Object val = value.get(key);
+					Object val = entry.getValue();
 					if (val instanceof OriginTrackedValue) {
 						val = ((OriginTrackedValue) val).getValue();
 					}
@@ -105,9 +106,10 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 					// the current map.
 					key = key.substring(0, key.indexOf("["));
 					Map<String, Object> filtered = new LinkedHashMap<>();
-					for (String index : value.keySet()) {
+					for (Map.Entry<String, Object> innerLoopEntry : value.entrySet()) {
+						String index = innerLoopEntry.getKey();
 						if (index.startsWith(key + "[")) {
-							Object val = value.get(index);
+							Object val = innerLoopEntry.getValue();
 							if (val instanceof OriginTrackedValue) {
 								val = ((OriginTrackedValue) val).getValue();
 							}
