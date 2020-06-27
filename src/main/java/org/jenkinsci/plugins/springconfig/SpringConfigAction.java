@@ -1,9 +1,7 @@
 package org.jenkinsci.plugins.springconfig;
 
-import hudson.PluginWrapper;
 import hudson.model.Api;
 import hudson.model.Run;
-import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,7 +39,6 @@ public class SpringConfigAction implements RunAction2 {
 	@CheckForNull
 	@Override
 	public String getIconFileName() {
-		PluginWrapper wrapper = Jenkins.get().getPluginManager().getPlugin(SpringConfigPlugin.class);
 		return "/plugin/spring-config/images/spring-framework.png";
 	}
 
