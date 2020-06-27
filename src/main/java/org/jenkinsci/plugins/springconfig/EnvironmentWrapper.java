@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.springconfig;
 
+import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
@@ -48,7 +49,7 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 
 	@Whitelisted
 	public List<String> getProfiles() {
-		return Arrays.asList(profiles);
+		return ImmutableList.copyOf(profiles);
 	}
 
 	public String getProfilesAsString() {
