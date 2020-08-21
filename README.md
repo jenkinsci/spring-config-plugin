@@ -28,5 +28,5 @@ Each build has a 'Spring Config' page which shows the configuration read by this
 
 Example: 
  ```groovy
- def config=springConfig(profiles: ['p1,p2'], location : 'custom-config/')
+ def config=springConfig(profiles: ['p1','p2'], location : 'custom-config/,custom-config2/')
 ```

@@ -29,6 +29,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.boot.context.config.ConfigFileApplicationListener.CONFIG_LOCATION_PROPERTY;
 
@@ -163,7 +164,15 @@ public class SpringConfigStep extends Step implements Serializable {
 				StandardEnvironment environment = new StandardEnvironment();
 				Map<String, Object> configFilesMap = new HashMap();
 				if (location != null && !location.equals("")) {
-					configFilesMap.put(CONFIG_LOCATION_PROPERTY, ws.getRemote() + "/" + location);
+					String newLocation = Arrays.stream(location.split(",")).map(single -> {
+						String remoteLocation = new FilePath(ws, single).getRemote();
+						char lastChar = single.charAt(single.length() - 1);
+						if (lastChar == '/' || lastChar == '\\') {
+							remoteLocation += lastChar;
+						}
+						return remoteLocation;
+					}).collect(Collectors.joining(","));
+					configFilesMap.put(CONFIG_LOCATION_PROPERTY, newLocation);
 				}
 				else {
 					configFilesMap.put(CONFIG_LOCATION_PROPERTY, ws.getRemote() + "/");
@@ -175,7 +184,7 @@ public class SpringConfigStep extends Step implements Serializable {
 						// Don't use the default properties in this builder
 						.registerShutdownHook(false).logStartupInfo(false).web(WebApplicationType.NONE)
 						.sources(EmtpyConfiguration.class);
-				builder.run();
+				builder.run().close();
 
 				getLogger().print(environment);
 
