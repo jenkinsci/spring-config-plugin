@@ -80,6 +80,27 @@ public class SpringConfigTest {
 	}
 
 	@Test
+	@SneakyThrows
+	public void testReadSpringConfigWithMultiLocationAndProfile() throws Exception {
+		Jenkins jenkins = r.jenkins;
+		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
+		FilePath applicationGooYaml = jenkins.getWorkspaceFor(p).child("custom-config").child("application-goo.yaml");
+		FilePath applicationGoo2Yaml = jenkins.getWorkspaceFor(p).child("custom-config2")
+				.child("application-goo2.yaml");
+		applicationGooYaml
+				.copyFrom(this.getClass().getClassLoader().getResourceAsStream("nodefault/application-goo.yaml"));
+		applicationGoo2Yaml
+				.copyFrom(this.getClass().getClassLoader().getResourceAsStream("nodefault/application-goo2.yaml"));
+		p.setDefinition(new CpsFlowDefinition(
+				"node{def config=springConfig(profiles: ['goo','goo2'], location : 'custom-config/,custom-config2/');\n"
+						+ "print config.foo;\n" + "print config.bar;\n" + "}",
+				true));
+		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+		r.assertLogContains("gooporfile", b);
+		r.assertLogContains("barporfile", b);
+	}
+
+	@Test
 	public void testReadSpringConfigAsProperties() throws Exception {
 		Jenkins jenkins = r.jenkins;
 		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
