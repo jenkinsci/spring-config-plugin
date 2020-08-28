@@ -21,6 +21,7 @@
         <assertj.version>3.16.1</assertj.version>
         <snakeyaml-api.version>1.26.2</snakeyaml-api.version>
         <lombok.version>1.18.10</lombok.version>
+        <guava.version>11.0.1</guava.version>
     </properties>
 
     <name>Spring Config Plugin</name>
@@ -89,6 +90,12 @@
                 <version>${assertj.version}</version>
                 <scope>test</scope>
             </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
@@ -144,6 +151,10 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>

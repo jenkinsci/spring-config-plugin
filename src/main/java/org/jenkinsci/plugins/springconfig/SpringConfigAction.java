@@ -10,6 +10,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.annotation.CheckForNull;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class SpringConfigAction implements RunAction2 {
 			Map<String, String> properties = profileProperties.getValue();
 			List<KeyValue> propertiesAsList = properties.entrySet().stream()
 					.map(property -> KeyValue.builder().key(property.getKey()).value(property.getValue()).build())
-					.collect(Collectors.toList());
+					.sorted(Comparator.comparing(KeyValue::getKey)).collect(Collectors.toList());
 			String profiles = profileProperties.getKey();
 			return ProfileConfig.builder().profiles(profiles).properties(propertiesAsList).build();
 		}).collect(Collectors.toList());

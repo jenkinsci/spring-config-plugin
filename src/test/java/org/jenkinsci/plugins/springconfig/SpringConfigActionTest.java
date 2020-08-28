@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.springconfig;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
+import com.google.common.collect.Ordering;
 import hudson.FilePath;
 import jenkins.model.Jenkins;
 import lombok.SneakyThrows;
@@ -14,9 +15,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.springframework.util.comparator.Comparators;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,6 +58,9 @@ public class SpringConfigActionTest {
 		assertThat(tables).hasSize(2);
 		assertThat(tables.get(0).getRowCount()).isEqualTo(7);
 		assertThat(tables.get(1).getRowCount()).isEqualTo(7);
+		List<String> keys = IntStream.range(1, tables.get(0).getRowCount())
+				.mapToObj(i -> tables.get(0).getRow(i).getCell(0).asText()).collect(Collectors.toList());
+		assertThat(Ordering.<String>natural().isOrdered(keys)).isTrue();
 	}
 
 	@Test
