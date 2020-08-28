@@ -20,9 +20,9 @@ public class SpringConfigAction implements RunAction2 {
 
 	private Run run;
 
-	private Map<String, Map<String, Object>> allProperties = new HashMap();
+	private Map<String, Map<String, String>> allProperties = new HashMap();
 
-	public void addProperties(String profiles, Map<String, Object> properties) {
+	public void addProperties(String profiles, Map<String, String> properties) {
 		allProperties.put(profiles, properties);
 	}
 
@@ -59,13 +59,13 @@ public class SpringConfigAction implements RunAction2 {
 	}
 
 	@Exported(visibility = 2)
-	public Map<String, Map<String, Object>> getProperties() {
+	public Map<String, Map<String, String>> getProperties() {
 		return allProperties;
 	}
 
 	public List<ProfileConfig> getAllProperties() {
 		return allProperties.entrySet().stream().map(profileProperties -> {
-			Map<String, Object> properties = profileProperties.getValue();
+			Map<String, String> properties = profileProperties.getValue();
 			List<KeyValue> propertiesAsList = properties.entrySet().stream()
 					.map(property -> KeyValue.builder().key(property.getKey()).value(property.getValue()).build())
 					.collect(Collectors.toList());

@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 public class EnvironmentWrapperTest {
@@ -32,6 +33,7 @@ public class EnvironmentWrapperTest {
 		mutablePropertySources.addLast(source1);
 		standardEnvironment = mock(StandardEnvironment.class);
 		when(standardEnvironment.getPropertySources()).thenReturn(mutablePropertySources);
+		when(standardEnvironment.resolvePlaceholders(anyString())).then(returnsFirstArg());
 
 	}
 
@@ -51,7 +53,7 @@ public class EnvironmentWrapperTest {
 	public void asProperties() {
 		when(standardEnvironment.getActiveProfiles()).thenReturn(new String[] { "p1", "p2" });
 		EnvironmentWrapper env = new EnvironmentWrapper(standardEnvironment);
-		Map<String, Object> properties = env.asProperties();
+		Map<String, String> properties = env.asProperties();
 		assertThat(properties).hasSize(5).containsKeys("key", "in.nested.key", "arraykey[0]", "arraykey[1]", "noascii");
 	}
 

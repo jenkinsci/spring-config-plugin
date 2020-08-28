@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
 import org.springframework.boot.origin.OriginTrackedValue;
+import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.yaml.snakeyaml.Yaml;
@@ -22,7 +23,7 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 
 	private Map<String, Object> rootMap;
 
-	private Map<String, Object> properties;
+	private Map<String, String> properties;
 
 	private String[] profiles;
 
@@ -57,7 +58,7 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 	}
 
 	@Whitelisted
-	public Map<String, Object> asProperties() {
+	public Map<String, String> asProperties() {
 		return properties;
 	}
 
@@ -76,7 +77,7 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 		return rootMap.entrySet();
 	}
 
-	private Map<String, Object> toProperties(StandardEnvironment environment) {
+	private Map<String, String> toProperties(StandardEnvironment environment) {
 		// Map of unique keys containing full map of properties for each unique
 		// key
 		Map<String, Map<String, Object>> map = new LinkedHashMap<>();
@@ -125,17 +126,18 @@ public class EnvironmentWrapper extends AbstractMap<String, Object> implements S
 		for (Map.Entry<String, Map<String, Object>> entry : map.entrySet()) {
 			combinedMap.putAll(entry.getValue());
 		}
-		postProcessProperties(combinedMap);
-		return combinedMap;
+		return postProcessProperties(combinedMap, environment);
 	}
 
-	private void postProcessProperties(Map<String, Object> propertiesMap) {
+	private Map<String, String> postProcessProperties(Map<String, Object> propertiesMap, Environment environment) {
 		propertiesMap.keySet().removeIf(key -> key.equals("spring.profiles"));
+		return propertiesMap.entrySet().stream().collect(Collectors.toMap(Entry::getKey,
+				entry -> environment.resolvePlaceholders(String.valueOf(entry.getValue())).replace("$_{", "${")));
 	}
 
-	private Map<String, Object> createNestedMap(Map<String, Object> properties) {
+	private Map<String, Object> createNestedMap(Map<String, String> properties) {
 		Map<String, Object> rootMap = new LinkedHashMap<>();
-		for (Entry<String, Object> entry : properties.entrySet()) {
+		for (Entry<String, String> entry : properties.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			PropertyNavigator nav = new PropertyNavigator(key);

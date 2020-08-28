@@ -27,6 +27,18 @@ public class SpringConfigTest {
 	}
 
 	@Test
+	public void testReadSpringConfigResolved() throws Exception {
+		Jenkins jenkins = r.jenkins;
+		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
+		FilePath applicationYaml = jenkins.getWorkspaceFor(p).child("application.yaml");
+		applicationYaml.copyFrom(
+				this.getClass().getClassLoader().getResourceAsStream("nodefault/application-toresolved.yaml"));
+		p.setDefinition(new CpsFlowDefinition("node {print springConfig().goo}", true));
+		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+		r.assertLogContains("bar123", b);
+	}
+
+	@Test
 	public void testReadSpringConfigInDir() throws Exception {
 		Jenkins jenkins = r.jenkins;
 		WorkflowJob p = jenkins.createProject(WorkflowJob.class, "p");
