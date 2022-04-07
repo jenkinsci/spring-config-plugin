@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.springframework.util.comparator.Comparators;
 
 import java.util.List;
 import java.util.Map;
@@ -68,19 +67,19 @@ public class SpringConfigActionTest {
 		Map jsonObject = r.getJSON(String.format("job/%s/%d/springconfig/api/json", jobName, buildNumber))
 				.getJSONObject();
 		// @formatter:off
-		assertThat(jsonObject)
-			.hasSize(2)
-			.containsKeys("_class","properties")
-			.extractingByKey("_class")
-			.asInstanceOf(InstanceOfAssertFactories.STRING)
-			.isEqualTo("org.jenkinsci.plugins.springconfig.SpringConfigAction");
-		assertThat(jsonObject.get("properties"))
-			.asInstanceOf(InstanceOfAssertFactories.MAP)
-			.hasSize(2)
-			.extractingByKey("")
-			.asInstanceOf(InstanceOfAssertFactories.MAP)
-			.extractingByKey("foo")
-			.isEqualTo("bar");
-	}
+        assertThat(jsonObject)
+                .hasSize(2)
+                .containsKeys("_class", "properties")
+                .extractingByKey("_class")
+                .asInstanceOf(InstanceOfAssertFactories.STRING)
+                .isEqualTo("org.jenkinsci.plugins.springconfig.SpringConfigAction");
+        assertThat(jsonObject.get("properties"))
+                .asInstanceOf(InstanceOfAssertFactories.MAP)
+                .hasSize(2)
+                .extractingByKey("")
+                .asInstanceOf(InstanceOfAssertFactories.MAP)
+                .extractingByKey("foo")
+                .isEqualTo("bar");
+    }
 
 }

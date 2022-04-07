@@ -21,7 +21,7 @@ public class SpringConfigAction implements RunAction2 {
 
 	private Run run;
 
-	private Map<String, Map<String, String>> allProperties = new HashMap();
+	private final Map<String, Map<String, String>> allProperties = new HashMap();
 
 	public void addProperties(String profiles, Map<String, String> properties) {
 		allProperties.put(profiles, properties);

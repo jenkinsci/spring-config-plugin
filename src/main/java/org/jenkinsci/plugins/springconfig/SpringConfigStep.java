@@ -95,7 +95,7 @@ public class SpringConfigStep extends Step implements Serializable {
 
 	public static class SpringProfileExecution extends SynchronousStepExecution<EnvironmentWrapper> {
 
-		private SpringConfigStep step;
+		private final SpringConfigStep step;
 
 		protected SpringProfileExecution(@Nonnull StepContext context, SpringConfigStep step) {
 			super(context);
