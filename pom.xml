@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>4.0</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <groupId>io.jenkins.plugins</groupId>
@@ -16,12 +17,16 @@
 
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-        <jenkins.version>2.204.6</jenkins.version>
+        <jenkins.version>2.263.4</jenkins.version>
         <java.level>8</java.level>
         <assertj.version>3.16.1</assertj.version>
         <snakeyaml-api.version>1.26.2</snakeyaml-api.version>
         <lombok.version>1.18.10</lombok.version>
-        <guava.version>11.0.1</guava.version>
+        <guava.version>31.1-jre</guava.version>
+        <spring-boot-dependencies.version>2.6.6</spring-boot-dependencies.version>
+        <bom-2.204.x.version>18</bom-2.204.x.version>
+        <checker-qual.version>3.19.0</checker-qual.version>
+        <cloudbees-folder.version>5.14</cloudbees-folder.version>
     </properties>
 
     <name>Spring Config Plugin</name>
@@ -68,14 +73,14 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.3.1.RELEASE</version>
+                <version>${spring-boot-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.204.x</artifactId>
-                <version>10</version>
+                <version>${bom-2.204.x.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -90,11 +95,15 @@
                 <version>${assertj.version}</version>
                 <scope>test</scope>
             </dependency>
-
             <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
+                <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>cloudbees-folder</artifactId>
+                <version>${cloudbees-folder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>${checker-qual.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -114,6 +123,10 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-support</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>cloudbees-folder</artifactId>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -147,6 +160,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>org.springframework:spring-jcl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -179,6 +198,7 @@
     </dependencies>
 
     <build>
+
         <plugins>
 
             <plugin>
@@ -226,7 +246,7 @@
                     <plugin>
                         <groupId>io.spring.javaformat</groupId>
                         <artifactId>spring-javaformat-maven-plugin</artifactId>
-                        <version>0.0.22</version>
+                        <version>0.0.31</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
