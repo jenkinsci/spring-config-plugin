@@ -1,16 +1,21 @@
 # Spring Config Plugin
 This plugin is used to read [Spring Boot style application properties files](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-application-property-files).
 
-## Define the profiles
-Profiles can be defined at job configuration.
+## Define the profile names
+Profile names can be defined at job configuration.
 ![Job Configuration](doc/job_configuration.png)
 Or job folder configuration
 ![Folder Configuration](doc/folder_configuration.png)
-In structures where two or more folders are nested, all profiles are merged together.
+In structures where two or more folders are nested, all profile name are merged together.
 
+## Retrieve the profile names
+Use `SpringProfiles()` to retrieve the profile names defined
+```groovy
+def profiles=springProfiles()
+```
 
-## Usage
-This plugin supports custom location and profiles. The return is a nested Map object.  
+## Get value from spring application style configuration file
+This plugin supports custom location and profiles. The returned value is a nested Map object.  
 
 Suppose there's a yaml style `application.yaml` config file.
 ```yaml
@@ -36,6 +41,7 @@ Each build has a 'Spring Config' page which shows the configuration read by this
 
 Example: 
  ```groovy
- def config=springConfig(profiles: ['p1','p2'], location : 'custom-config/,custom-config2/')
+ def profiles=springProfiles()
+ def config=springConfig(profiles: profiles, location : 'custom-config/,custom-config2/')
 ```
 
