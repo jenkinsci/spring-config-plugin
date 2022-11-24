@@ -23,7 +23,7 @@
   ~ THE SOFTWARE.
   -->
 
-<?jelly escape-by-default='false'?>
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <l:layout title="${it.displayName}">
         <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread"/>
