@@ -19,10 +19,10 @@
         <jenkins.version>2.263.4</jenkins.version>
         <java.level>8</java.level>
         <assertj.version>3.16.1</assertj.version>
-        <snakeyaml-api.version>1.26.2</snakeyaml-api.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
         <lombok.version>1.18.10</lombok.version>
         <guava.version>31.1-jre</guava.version>
-        <spring-boot-dependencies.version>2.6.6</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>2.7.15</spring-boot-dependencies.version>
         <bom-2.204.x.version>18</bom-2.204.x.version>
         <checker-qual.version>3.19.0</checker-qual.version>
         <cloudbees-folder.version>5.14</cloudbees-folder.version>
@@ -137,8 +137,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>snakeyaml-api</artifactId>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
