@@ -1,8 +1,8 @@
 package org.jenkinsci.plugins.springconfig;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTable;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTable;
 import com.google.common.collect.Ordering;
 import hudson.FilePath;
 import jenkins.model.Jenkins;
